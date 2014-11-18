@@ -7,6 +7,7 @@ using namespace std;
 
 vector<int> lista_adj[MAX_VERTICES];
 vector<int> clique;
+int cor[MAX_VERTICES];
 int N;
 
 /*
@@ -113,6 +114,47 @@ void encontraClique()
 	}
 }
 
+void colore(int v)
+{
+	bool cor_ja_usada[MAX_VERTICES];
+	int num_vizinhos = grau(v);
+	for(int i=0;i<MAX_VERTICES;i++)
+	{
+		cor_ja_usada[i] = false;
+	}
+	for(int i=0;i<num_vizinhos;i++)
+	{
+		if(cor[lista_adj[v][i]] != -1)
+		{
+			cor_ja_usada[cor[lista_adj[v][i]]] = true;
+		}
+	}
+	for(int i=0;i<MAX_VERTICES;i++)
+	{
+		if(cor_ja_usada[i] == false)
+		{
+			cor[v] = i;
+			break;
+		}
+	}
+	for(int i=0;i<num_vizinhos;i++)
+	{
+		if(cor[lista_adj[v][i]] == -1)
+		{
+			colore(lista_adj[v][i]);
+		}
+	}
+}
+
+void inicia_cor_e_colore(int v)
+{
+	for(int i=0;i<N;i++)
+	{
+		cor[i] = -1;
+	}
+	colore(v);
+}
+
 int main(int argn, char* argc[])
 {
 	N = 6;
@@ -139,11 +181,19 @@ int main(int argn, char* argc[])
 	lista_adj[5].push_back(1);
 	lista_adj[5].push_back(0);
 	lista_adj[5].push_back(4);
-	encontraClique();
 
+	encontraClique();
 	for(int i=0;i<clique.size();i++)
 	{
 		printf("%d\n",clique[i]);
+	}
+
+	printf("---------------------\n");
+
+	inicia_cor_e_colore(0);
+	for(int i=0;i<N;i++)
+	{
+		printf("cor do %d = %d\n",i,cor[i]);
 	}
 
 	return 0;
