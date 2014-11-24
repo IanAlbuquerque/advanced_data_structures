@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <vector>
 #include <set>
+#include "CPUTimer/CPUTimer.h"
 
-#define MAX_VERTICES 1000
+#define MAX_VERTICES 2100
 
 using namespace std;
 
@@ -299,6 +300,81 @@ int cobertura_minimal()
 	return numero_de_coberturas;
 }
 
+void run_tudo(bool should_print)
+{
+	findClick();
+	if(should_print) 
+	{
+		for ( set<int>::iterator i = click.begin(); i != click.end(); i++ )
+			printf("%d\n",*i);
+		printf("Temanho do clique encontrado = %d\n",click.size());
+	}
+	
+
+	if(should_print) printf("---------------------\n");
+
+	initAndColor(1);
+	
+	if(should_print) 
+	{
+		for(int i=0;i<N;i++)
+		{
+			printf("cor do %d = %d\n",i,color_array[i]);
+		}
+	}
+	
+
+	int max_color = -1;
+	for(int i=0;i<N;i++)
+	{
+		if(color_array[i] > max_color)
+		{
+			max_color = color_array[i];
+		}
+	}
+	if(should_print) printf("Numero de cores usados = %d\n",max_color+1);
+
+
+	if(should_print) printf("---------------------\n");
+
+	int numero_de_coberturas = cobertura_minimal();
+
+	int num_clicks[MAX_VERTICES];
+	for(int i=0;i<MAX_VERTICES;i++)
+	{
+		num_clicks[i]=0;
+	}
+	int max_size_clique = -1;
+	int min_size_clique = N+1;
+	int soma=0;
+	for(int i=1;i<=numero_de_coberturas;i++)
+	{
+		soma += (int) S[i].size();
+		if( (int) S[i].size() > max_size_clique)
+		{
+			if(S[i].size() > 1) max_size_clique = S[i].size();
+		}
+		if( (int) S[i].size() < min_size_clique)
+		{
+			if(S[i].size() > 1) min_size_clique = S[i].size();
+		}
+		num_clicks[S[i].size()] = num_clicks[S[i].size()] + 1;
+	}
+
+	float media = ((float)soma)/numero_de_coberturas;
+
+	if(should_print) 
+	{
+		for(int i=2;i<MAX_VERTICES;i++)
+		{
+			if(num_clicks[i]) printf("Numero de cliques de tamanho %d = %d\n",i,num_clicks[i]);
+		}
+		printf("Maior tamanho de clique = %d\n",max_size_clique);
+		printf("Menor tamanho de clique = %d\n",min_size_clique);
+		printf("Media tamanho de clique = %.02f\n",media);
+	}
+}
+
 
 int main(int argn, char* argc[])
 {
@@ -358,68 +434,23 @@ int main(int argn, char* argc[])
 		//printf("%d %d\n",v1,v2);
 	}
 
-	findClick();
-	for ( set<int>::iterator i = click.begin(); i != click.end(); i++ )
-		printf("%d\n",*i);
-	printf("Temanho do clique encontrado = %d\n",click.size());
-	
+	//====================================================
 
-	printf("---------------------\n");
+	CPUTimer timer_total;
+	int runs = 0;
 
-	initAndColor(1);
-	
-	for(int i=0;i<N;i++)
+	do
 	{
-		printf("cor do %d = %d\n",i,color_array[i]);
+		runs++;
+
+		printf("#Run %d\n",runs);
+		timer_total.start();
+		run_tudo(false);
+		timer_total.stop();
 	}
-	
+	while(timer_total.getCPUTotalSecs() < 5.0f);
 
-	int max_color = -1;
-	for(int i=0;i<N;i++)
-	{
-		if(color_array[i] > max_color)
-		{
-			max_color = color_array[i];
-		}
-	}
-	printf("Numero de cores usados = %d\n",max_color+1);
-
-
-	printf("---------------------\n");
-
-	int numero_de_coberturas = cobertura_minimal();
-
-	int num_clicks[MAX_VERTICES];
-	for(int i=0;i<MAX_VERTICES;i++)
-	{
-		num_clicks[i]=0;
-	}
-	int max_size_clique = -1;
-	int min_size_clique = N+1;
-	int soma=0;
-	for(int i=1;i<=numero_de_coberturas;i++)
-	{
-		soma += (int) S[i].size();
-		if( (int) S[i].size() > max_size_clique)
-		{
-			if(S[i].size() > 1) max_size_clique = S[i].size();
-		}
-		if( (int) S[i].size() < min_size_clique)
-		{
-			if(S[i].size() > 1) min_size_clique = S[i].size();
-		}
-		num_clicks[S[i].size()] = num_clicks[S[i].size()] + 1;
-	}
-
-	float media = ((float)soma)/numero_de_coberturas;
-
-	for(int i=2;i<MAX_VERTICES;i++)
-	{
-		if(num_clicks[i]) printf("Numero de cliques de tamanho %d = %d\n",i,num_clicks[i]);
-	}
-	printf("Maior tamanho de clique = %d\n",max_size_clique);
-	printf("Menor tamanho de clique = %d\n",min_size_clique);
-	printf("Media tamanho de clique = %.02f\n",media);
+	printf("Executou %d execucoes em %fs (media: %f exec/s)\n",runs,timer_total.getCPUTotalSecs(),timer_total.getCPUTotalSecs()/runs);
 
 	return 0;
 }
