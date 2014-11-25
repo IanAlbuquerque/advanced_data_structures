@@ -1,0 +1,37 @@
+========================================================
+Running Find Clique Algorithm...
+========================================================
+---------------------
+Find Clique Results
+---------------------
+Click size found = 13
+---------------------
+The 'find clique' algorithm ran 472 times in 5.02 seconds (average: 0.010631 seconds/run)
+========================================================
+Running Find Cover Algorithm...
+========================================================
+---------------------
+Clique Cover Results
+---------------------
+Number of cliques with size 2 = 8
+Number of cliques with size 3 = 7
+Number of cliques with size 4 = 3
+Number of cliques with size 5 = 3
+Number of cliques with size 6 = 5
+Number of cliques with size 7 = 2
+Number of cliques with size 13 = 2
+Largest clique = 13
+Smallest clique= 2
+Average clique size = 2.08
+---------------------
+The 'find cover' algorithm ran 11 times in 5.80 seconds (average: 0.527182 seconds/run)
+========================================================
+Running Coloring Algorithm...
+========================================================
+---------------------
+Coloring Results
+---------------------
+Amount of colors used = 49
+---------------------
+The 'coloring' algorithm ran 2850 times in 5.00 seconds (average: 0.001755 seconds/run)
+========================================================
