@@ -7,12 +7,14 @@
 
 using namespace std;
 
+int NUM_VERTICES;
+int NUM_EDGES; 
+
 vector<int> adjacency_list[MAX_VERTICES];
 set<int> clique; 
 int vertex_color[MAX_VERTICES]; 
-int NUM_VERTICES; 
 int vertex_degree[MAX_VERTICES];
-set<int> clique_components[MAX_VERTICES];
+set<int> clique_cover_components[MAX_VERTICES];
 
 
 void calculateDegrees(set<int>* vertices)
@@ -161,15 +163,18 @@ void findClique(set<int>* vertices)
 	}
 }
 
-void findClickWholeGraph()
+void fillVerticesWithWholeGraph(set<int>* vertices)
 {
-	set<int> vertices;
-
 	for(int i=0; i<NUM_VERTICES; i++)
 	{
-		vertices.insert(i);
-	}
+		vertices->insert(i);
+	}	
+}
 
+void findCliqueWholeGraph()
+{
+	set<int> vertices;
+	fillVerticesWithWholeGraph(&vertices);
 	findClique(&vertices);
 }
 
@@ -201,6 +206,18 @@ void setAdjacentUsedColors(int vertex, int num_adjacent_vertices, bool* adjacent
 	}
 }
 
+int smallestColorNotUsed(bool* adjacent_used_colors)
+{
+	for(int i=0; i<MAX_VERTICES; i++)
+	{
+		if(!adjacent_used_colors[i])
+		{
+			return i;
+		}
+	}
+	return MAX_VERTICES;	
+}
+
 void colorVertex(int vertex)
 {
 
@@ -208,23 +225,12 @@ void colorVertex(int vertex)
 	int num_adjacent_vertices;
 
 	calculateDegreesWholeGraph();
-
 	num_adjacent_vertices = vertex_degree[vertex];
-
 	clearUsedColors(adjacent_used_colors);
-	
 	setAdjacentUsedColors(vertex, num_adjacent_vertices, adjacent_used_colors);
-	
-	for(int i=0;i<MAX_VERTICES;i++)
-	{
-		if(!adjacent_used_colors[i])
-		{
-			vertex_color[vertex] = i;
-			break;
-		}
-	}
+	vertex_color[vertex] = smallestColorNotUsed(adjacent_used_colors);
 
-	for(int i=0;i<num_adjacent_vertices;i++)
+	for(int i=0; i<num_adjacent_vertices; i++)
 	{
 		if(vertex_color[adjacency_list[vertex][i]] == -1)
 		{
@@ -233,175 +239,195 @@ void colorVertex(int vertex)
 	}
 }
 
-void initAndColor(int vertex)
+void colorGraphStartingOn(int vertex)
 {
 	clearVerticesColor();
 	colorVertex(vertex);
 }
 
-int cobertura_minimal()
+void clearCover()
 {
-	int q;
-	set<int> v_linha;
+	for(int i=0;i<=NUM_VERTICES;i++)
+	{
+		clique_cover_components[i].clear();
+	}	
+}
+
+int findCover()
+{
+	int component_index;
+	set<int> vertices;
 	set<int> candidates;
 	int max_degree = 0;
 	int vertex_with_max_degree = -1;
-	int numero_de_coberturas;
+	int number_of_cover_components;
 
-	for(int i=0;i<=NUM_VERTICES;i++)
-	{
-		clique_components[i].clear();
-	}
+	calculateDegreesWholeGraph();
+	clearCover();
 
-	for(int i=0;i<NUM_VERTICES;i++)
-	{
-		v_linha.insert(i);
-	}
+	fillVerticesWithWholeGraph(&vertices);
 	
-	q = 0;
+	component_index = 0;
 	do
 	{
-		q++;
+		component_index++;
 
-		findCliqueIncludingSoloVertex(&v_linha);
-		clique_components[q] = clique;
+		findCliqueIncludingSoloVertex(&vertices);
+		clique_cover_components[component_index] = clique;
 
-		for ( set<int>::iterator i = clique_components[q].begin(); i != clique_components[q].end(); i++ )
+		for(set<int>::iterator it=clique_cover_components[component_index].begin(); it!=clique_cover_components[component_index].end(); it++)
 		{
-			v_linha.erase(*i);
+			vertices.erase(*it);
 		}
 
-	}while(!v_linha.empty());
-
-	numero_de_coberturas = q;
-
-
-	for(int i=0;i<NUM_VERTICES;i++)
-	{
-		vertex_degree[i] = adjacency_list[i].size();
 	}
+	while(!vertices.empty());
 
-	for(int p=1;p<=q;p++)
+	number_of_cover_components = component_index;
+
+	for(int component_index=1; component_index<=number_of_cover_components; component_index++)
 	{
 		candidates.clear();
 
 		for(int i=0;i<NUM_VERTICES;i++)
 		{
-			if(hasEdgesToEveryoneInClique(i,&clique_components[p]))
+			if(hasEdgesToEveryoneInClique(i,&clique_cover_components[component_index]))
 			{
 				candidates.insert(i);
 			}	
 		}
 		while(!candidates.empty())
 		{
-
 			max_degree = 0;
 			vertex_with_max_degree = -1;
-			for ( set<int>::iterator i = candidates.begin(); i != candidates.end(); i++ )
+			for(set<int>::iterator it = candidates.begin(); it != candidates.end(); it++)
 			{
-				if( vertex_degree[*i] > max_degree )
+				if( vertex_degree[*it] > max_degree )
 				{
-					max_degree = vertex_degree[*i];
-					vertex_with_max_degree = *i;
+					max_degree = vertex_degree[*it];
+					vertex_with_max_degree = *it;
 				}
 			}
-
-			clique_components[p].insert(vertex_with_max_degree);
+			clique_cover_components[component_index].insert(vertex_with_max_degree);
 			candidates.erase(vertex_with_max_degree);
 		}
-
 	}
 	
-
-	return numero_de_coberturas;
+	return number_of_cover_components;
 }
 
-void run_tudo(bool should_print)
+void runFindClique(bool should_print_results)
 {
-	findClickWholeGraph();
-	if(should_print) 
-	{
-		for ( set<int>::iterator i = clique.begin(); i != clique.end(); i++ )
-			printf("%d\n",*i);
-		printf("Temanho do clique encontrado = %d\n",clique.size());
-	}
-	
+	findCliqueWholeGraph();
 
-	if(should_print) printf("---------------------\n");
-
-	initAndColor(1);
-	
-	if(should_print) 
+	if(should_print_results) 
 	{
+		printf("---------------------\n");
+		printf("Find Clique Results\n");
+		printf("---------------------\n");
+		/*
+		for (set<int>::iterator it = clique.begin(); it != clique.end(); it++)
+		{
+			printf("%d\n",*it);
+		}
+		*/
+		printf("Click size found = %d\n",clique.size());
+		printf("---------------------\n");
+	}	
+}
+
+void runColoring(bool should_print_results)
+{
+	colorGraphStartingOn(1);
+	
+	if(should_print_results) 
+	{
+		printf("---------------------\n");
+		printf("Coloring Results\n");
+		printf("---------------------\n");
+		/*
+			for(int i=0;i<NUM_VERTICES;i++)
+			{
+				printf("Vertex #%d was colored with = %d\n",i,vertex_color[i]);
+			}
+		*/
+		int max_color_used = -1;
 		for(int i=0;i<NUM_VERTICES;i++)
 		{
-			printf("cor do %d = %d\n",i,vertex_color[i]);
+			if(vertex_color[i] > max_color_used)
+			{
+				max_color_used = vertex_color[i];
+			}
 		}
-	}
-	
+		printf("Amount of colors used = %d\n",max_color_used+1);
+		printf("---------------------\n");
+	}	
+}
 
-	int max_color = -1;
-	for(int i=0;i<NUM_VERTICES;i++)
+void runFindCover(bool should_print_results)
+{
+	int number_of_cover_components = findCover();
+
+	if(should_print_results)
 	{
-		if(vertex_color[i] > max_color)
+		printf("---------------------\n");
+		printf("Clique Cover Results\n");
+		printf("---------------------\n");
+		int num_cliques_with_size[MAX_VERTICES];
+
+		for(int i=0;i<MAX_VERTICES;i++)
 		{
-			max_color = vertex_color[i];
+			num_cliques_with_size[i]=0;
 		}
-	}
-	if(should_print) printf("Numero de cores usados = %d\n",max_color+1);
 
+		int max_clique_size = -1;
+		int min_clique_size = NUM_VERTICES+1;
+		int sum=0;
 
-	if(should_print) printf("---------------------\n");
-
-	int numero_de_coberturas = cobertura_minimal();
-
-	int num_clicks[MAX_VERTICES];
-	for(int i=0;i<MAX_VERTICES;i++)
-	{
-		num_clicks[i]=0;
-	}
-	int max_size_clique = -1;
-	int min_size_clique = NUM_VERTICES+1;
-	int soma=0;
-	for(int i=1;i<=numero_de_coberturas;i++)
-	{
-		soma += (int) clique_components[i].size();
-		if( (int) clique_components[i].size() > max_size_clique)
+		for(int i=1; i<=number_of_cover_components; i++)
 		{
-			if(clique_components[i].size() > 1) max_size_clique = clique_components[i].size();
-		}
-		if( (int) clique_components[i].size() < min_size_clique)
-		{
-			if(clique_components[i].size() > 1) min_size_clique = clique_components[i].size();
-		}
-		num_clicks[clique_components[i].size()] = num_clicks[clique_components[i].size()] + 1;
-	}
+			sum += (int) clique_cover_components[i].size();
 
-	float media = ((float)soma)/numero_de_coberturas;
+			if( (int) clique_cover_components[i].size() > max_clique_size)
+			{
+				if(clique_cover_components[i].size() > 1) max_clique_size = clique_cover_components[i].size();
+			}
+			if( (int) clique_cover_components[i].size() < min_clique_size)
+			{
+				if(clique_cover_components[i].size() > 1) min_clique_size = clique_cover_components[i].size();
+			}
 
-	if(should_print) 
-	{
+			num_cliques_with_size[clique_cover_components[i].size()]++;
+		}
+
+		float average = ((float)sum) / number_of_cover_components;
+
 		for(int i=2;i<MAX_VERTICES;i++)
 		{
-			if(num_clicks[i]) printf("Numero de cliques de tamanho %d = %d\n",i,num_clicks[i]);
+			if(num_cliques_with_size[i])
+			{
+				printf("Number of cliques with size %d = %d\n",i,num_cliques_with_size[i]);
+			}
 		}
-		printf("Maior tamanho de clique = %d\n",max_size_clique);
-		printf("Menor tamanho de clique = %d\n",min_size_clique);
-		printf("Media tamanho de clique = %.02f\n",media);
+		printf("Largest clique = %d\n",max_clique_size);
+		printf("Smallest clique= %d\n",min_clique_size);
+		printf("Average clique size = %.02f\n",average);
+		printf("---------------------\n");
 	}
 }
 
 
-int main(int argn, char* argc[])
+void readGraph()
 {
-	char c_lido;
-	int M;
-	int v1,v2;
+	char input_char_read;
+	int vertex_1;
+	int vertex_2;
 
-	while(1)
+	while(true)
 	{
-		scanf(" %c",&c_lido);
-		if(c_lido != 'c')
+		scanf(" %c",&input_char_read);
+
+		if(input_char_read != 'c')
 		{
 			break;
 		}
@@ -411,34 +437,85 @@ int main(int argn, char* argc[])
 		}
 	}
 
-	scanf(" edge %d %d",&NUM_VERTICES,&M);
-	printf("NUM_VERTICES=%d M=%d\n",NUM_VERTICES,M);
+	scanf(" %*s %d %d",&NUM_VERTICES,&NUM_EDGES);
 
-	for(int i=0;i<M;i++)
+	for(int i=0;i<NUM_EDGES;i++)
 	{
-		scanf(" e %d %d ",&v1, &v2);
-		adjacency_list[v1].push_back(v2);
-		adjacency_list[v2].push_back(v1);
+		scanf(" e %d %d ",&vertex_1, &vertex_2);
+		adjacency_list[vertex_1].push_back(vertex_2);
+		adjacency_list[vertex_2].push_back(vertex_1);
 		
-	}
+	}	
+}
 
-	
-
+int main(int argn, char* argc[])
+{
 	CPUTimer timer_total;
-	int runs = 0;
+	int num_runs;
 
+	readGraph();
+
+	num_runs = 0;
+	printf("========================================================\n");
+	printf("Running Find Clique Algorithm...\n");
+	printf("========================================================\n");
 	do
 	{
-		runs++;
-
-		printf("#Run %d\n",runs);
+		num_runs++;
 		timer_total.start();
-		run_tudo(false);
+		runFindClique(false);
 		timer_total.stop();
 	}
 	while(timer_total.getCPUTotalSecs() < 5.0f);
+	timer_total.start();
+	runFindClique(true);
+	timer_total.stop();
+	printf("The 'find clique' algorithm ran %d times in %.02f seconds (average: %f seconds/run)\n",num_runs,
+																								timer_total.getCPUTotalSecs(),
+																								timer_total.getCPUTotalSecs()/num_runs);
 
-	printf("Executou %d execucoes em %fs (media: %f exec/clique_components)\n",runs,timer_total.getCPUTotalSecs(),timer_total.getCPUTotalSecs()/runs);
+	timer_total.reset();
+
+	num_runs = 0;
+	printf("========================================================\n");
+	printf("Running Find Cover Algorithm...\n");
+	printf("========================================================\n");
+	do
+	{
+		num_runs++;
+		timer_total.start();
+		runFindCover(false);
+		timer_total.stop();
+	}
+	while(timer_total.getCPUTotalSecs() < 5.0f);
+	timer_total.start();
+	runFindCover(true);
+	timer_total.stop();
+	printf("The 'find cover' algorithm ran %d times in %.02f seconds (average: %f seconds/run)\n",num_runs,
+																								timer_total.getCPUTotalSecs(),
+																								timer_total.getCPUTotalSecs()/num_runs);
+
+	timer_total.reset();
+
+	num_runs = 0;
+	printf("========================================================\n");
+	printf("Running Coloring Algorithm...\n");
+	printf("========================================================\n");
+	do
+	{
+		num_runs++;
+		timer_total.start();
+		runColoring(false);
+		timer_total.stop();
+	}
+	while(timer_total.getCPUTotalSecs() < 5.0f);
+	timer_total.start();
+	runColoring(true);
+	timer_total.stop();
+	printf("The 'coloring' algorithm ran %d times in %.02f seconds (average: %f seconds/run)\n",num_runs,
+																								timer_total.getCPUTotalSecs(),
+																								timer_total.getCPUTotalSecs()/num_runs);
+	printf("========================================================\n");
 
 	return 0;
 }
