@@ -77,7 +77,7 @@ bool isAdjacent(int v, int w)
 
 bool hasEdgesToEveryoneInClique(int vertex, set<int>* clique)
 {
-	int click_size = clique->size();
+	int clique_size = clique->size();
 	
 	for (set<int>::iterator it=clique->begin(); it!=clique->end(); it++)
 	{
@@ -287,17 +287,20 @@ int findCover()
 
 	for(int component_index=1; component_index<=number_of_cover_components; component_index++)
 	{
-		candidates.clear();
-
-		for(int i=0;i<NUM_VERTICES;i++)
-		{
-			if(hasEdgesToEveryoneInClique(i,&clique_cover_components[component_index]))
-			{
-				candidates.insert(i);
-			}	
-		}
 		while(!candidates.empty())
 		{
+			candidates.clear();
+			for(int i=0;i<NUM_VERTICES;i++)
+			{
+				if(!isVertexInTheClique(i,&clique_cover_components[component_index]))
+				{
+					if(hasEdgesToEveryoneInClique(i,&clique_cover_components[component_index]))
+					{
+						candidates.insert(i);
+					}
+				}	
+			}
+
 			max_degree = 0;
 			vertex_with_max_degree = -1;
 			for(set<int>::iterator it = candidates.begin(); it != candidates.end(); it++)
@@ -331,7 +334,7 @@ void runFindClique(bool should_print_results)
 			printf("%d\n",*it);
 		}
 		*/
-		printf("Click size found = %d\n",clique.size());
+		printf("Clique size found = %d\n",clique.size());
 		printf("---------------------\n");
 	}	
 }

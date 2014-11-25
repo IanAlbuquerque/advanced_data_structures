@@ -4,9 +4,9 @@ Running Find Clique Algorithm...
 ---------------------
 Find Clique Results
 ---------------------
-Click size found = 4
+Clique size found = 4
 ---------------------
-The 'find clique' algorithm ran 23 times in 5.24 seconds (average: 0.227826 seconds/run)
+The 'find clique' algorithm ran 24 times in 5.41 seconds (average: 0.225333 seconds/run)
 ========================================================
 Running Find Cover Algorithm...
 ========================================================
@@ -29,7 +29,7 @@ Largest clique = 38
 Smallest clique= 2
 Average clique size = 1.40
 ---------------------
-The 'find cover' algorithm ran 1 times in 237.75 seconds (average: 237.751000 seconds/run)
+The 'find cover' algorithm ran 1 times in 237.38 seconds (average: 237.379000 seconds/run)
 ========================================================
 Running Coloring Algorithm...
 ========================================================
@@ -38,5 +38,5 @@ Coloring Results
 ---------------------
 Amount of colors used = 183
 ---------------------
-The 'coloring' algorithm ran 246 times in 5.02 seconds (average: 0.020411 seconds/run)
+The 'coloring' algorithm ran 246 times in 5.02 seconds (average: 0.020415 seconds/run)
 ========================================================

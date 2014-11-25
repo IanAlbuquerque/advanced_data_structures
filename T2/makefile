@@ -1,4 +1,3 @@
-
 compile:
 	clear
 	@echo Compiling...
