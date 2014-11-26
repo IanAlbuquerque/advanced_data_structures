@@ -287,7 +287,7 @@ int findCover()
 
 	for(int component_index=1; component_index<=number_of_cover_components; component_index++)
 	{
-		while(!candidates.empty())
+		while(true)
 		{
 			candidates.clear();
 			for(int i=0;i<NUM_VERTICES;i++)
@@ -301,7 +301,9 @@ int findCover()
 				}	
 			}
 
-			max_degree = 0;
+			if(candidates.empty()) break;
+
+			max_degree = -1;
 			vertex_with_max_degree = -1;
 			for(set<int>::iterator it = candidates.begin(); it != candidates.end(); it++)
 			{
@@ -312,7 +314,6 @@ int findCover()
 				}
 			}
 			clique_cover_components[component_index].insert(vertex_with_max_degree);
-			candidates.erase(vertex_with_max_degree);
 		}
 	}
 	
